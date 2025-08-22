@@ -1,22 +1,47 @@
+import { db } from '../db';
+import { blogPostsTable } from '../db/schema';
 import { type BlogPost } from '../schema';
+import { eq, desc } from 'drizzle-orm';
 
 export const getBlogPosts = async (): Promise<BlogPost[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all blog posts from the database.
-    // This will be used to display blog content on the marketing website.
-    return [];
+  try {
+    const results = await db.select()
+      .from(blogPostsTable)
+      .orderBy(desc(blogPostsTable.created_at))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch blog posts:', error);
+    throw error;
+  }
 };
 
 export const getPublishedBlogPosts = async (): Promise<BlogPost[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only published blog posts from the database.
-    // This will be used for public blog page display on the marketing website.
-    return [];
+  try {
+    const results = await db.select()
+      .from(blogPostsTable)
+      .where(eq(blogPostsTable.is_published, true))
+      .orderBy(desc(blogPostsTable.published_at))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch published blog posts:', error);
+    throw error;
+  }
 };
 
 export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a specific blog post by its slug.
-    // This will be used for rendering individual blog post pages.
-    return null;
+  try {
+    const results = await db.select()
+      .from(blogPostsTable)
+      .where(eq(blogPostsTable.slug, slug))
+      .execute();
+
+    return results.length > 0 ? results[0] : null;
+  } catch (error) {
+    console.error('Failed to fetch blog post by slug:', error);
+    throw error;
+  }
 };

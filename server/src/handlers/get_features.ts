@@ -1,22 +1,51 @@
+import { db } from '../db';
+import { featuresTable } from '../db/schema';
 import { type Feature } from '../schema';
+import { eq, asc, and } from 'drizzle-orm';
 
 export const getFeatures = async (): Promise<Feature[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all AI tool features from the database.
-    // This will be used to display feature content on the Features page.
-    return [];
+  try {
+    const results = await db.select()
+      .from(featuresTable)
+      .orderBy(asc(featuresTable.sort_order), asc(featuresTable.name))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch features:', error);
+    throw error;
+  }
 };
 
 export const getActiveFeatures = async (): Promise<Feature[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only active features from the database, ordered by sort_order.
-    // This will be used for public Features page display on the marketing website.
-    return [];
+  try {
+    const results = await db.select()
+      .from(featuresTable)
+      .where(eq(featuresTable.is_active, true))
+      .orderBy(asc(featuresTable.sort_order), asc(featuresTable.name))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch active features:', error);
+    throw error;
+  }
 };
 
 export const getHighlightedFeatures = async (): Promise<Feature[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching highlighted features from the database for prominent display.
-    // This will be used to showcase key capabilities on the Home and Features pages.
-    return [];
+  try {
+    const results = await db.select()
+      .from(featuresTable)
+      .where(and(
+        eq(featuresTable.is_highlighted, true),
+        eq(featuresTable.is_active, true)
+      ))
+      .orderBy(asc(featuresTable.sort_order), asc(featuresTable.name))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch highlighted features:', error);
+    throw error;
+  }
 };

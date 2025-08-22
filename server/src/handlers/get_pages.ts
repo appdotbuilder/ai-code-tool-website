@@ -1,22 +1,45 @@
+import { db } from '../db';
+import { pagesTable } from '../db/schema';
 import { type Page } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const getPages = async (): Promise<Page[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all website pages from the database.
-    // This will return all pages including Home, Features, Pricing, About Us, Contact.
-    return [];
+  try {
+    const results = await db.select()
+      .from(pagesTable)
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch pages:', error);
+    throw error;
+  }
 };
 
 export const getPageBySlug = async (slug: string): Promise<Page | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a specific page by its slug (e.g., 'home', 'features').
-    // This will be used for rendering individual pages on the marketing website.
-    return null;
+  try {
+    const results = await db.select()
+      .from(pagesTable)
+      .where(eq(pagesTable.slug, slug))
+      .execute();
+
+    return results.length > 0 ? results[0] : null;
+  } catch (error) {
+    console.error('Failed to fetch page by slug:', error);
+    throw error;
+  }
 };
 
 export const getPublishedPages = async (): Promise<Page[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only published pages from the database.
-    // This will be used for public website navigation and content display.
-    return [];
+  try {
+    const results = await db.select()
+      .from(pagesTable)
+      .where(eq(pagesTable.is_published, true))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch published pages:', error);
+    throw error;
+  }
 };

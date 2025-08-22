@@ -1,30 +1,55 @@
+import { db } from '../db';
+import { contactSubmissionsTable } from '../db/schema';
 import { type ContactSubmission } from '../schema';
+import { eq, desc } from 'drizzle-orm';
 
 export const getContactSubmissions = async (): Promise<ContactSubmission[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all contact form submissions from the database.
-    // This will be used for admin dashboard to review customer inquiries.
-    return [];
+  try {
+    // Get all contact submissions ordered by creation date (newest first)
+    const result = await db.select()
+      .from(contactSubmissionsTable)
+      .orderBy(desc(contactSubmissionsTable.created_at))
+      .execute();
+
+    return result;
+  } catch (error) {
+    console.error('Failed to get contact submissions:', error);
+    throw error;
+  }
 };
 
 export const getUnreadContactSubmissions = async (): Promise<ContactSubmission[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only unread contact form submissions from the database.
-    // This will be used to highlight new customer inquiries that need attention.
-    return [];
+  try {
+    // Get only unread contact submissions ordered by creation date (newest first)
+    const result = await db.select()
+      .from(contactSubmissionsTable)
+      .where(eq(contactSubmissionsTable.is_read, false))
+      .orderBy(desc(contactSubmissionsTable.created_at))
+      .execute();
+
+    return result;
+  } catch (error) {
+    console.error('Failed to get unread contact submissions:', error);
+    throw error;
+  }
 };
 
 export const markContactSubmissionAsRead = async (id: number): Promise<ContactSubmission> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is marking a contact submission as read in the database.
-    // This will be used for contact management workflow.
-    return Promise.resolve({
-        id: id,
-        name: 'Placeholder Name',
-        email: 'placeholder@email.com',
-        company: null,
-        message: 'Placeholder message',
-        is_read: true, // Mark as read
-        created_at: new Date()
-    } as ContactSubmission);
+  try {
+    // Update the submission to mark as read and return the updated record
+    const result = await db.update(contactSubmissionsTable)
+      .set({ is_read: true })
+      .where(eq(contactSubmissionsTable.id, id))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Contact submission with id ${id} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Failed to mark contact submission as read:', error);
+    throw error;
+  }
 };

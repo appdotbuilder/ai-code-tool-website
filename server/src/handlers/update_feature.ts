@@ -1,18 +1,54 @@
+import { db } from '../db';
+import { featuresTable } from '../db/schema';
 import { type UpdateFeatureInput, type Feature } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const updateFeature = async (input: UpdateFeatureInput): Promise<Feature> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is updating an existing AI tool feature in the database.
-    // This will be used for feature content management on the Features page.
-    return Promise.resolve({
-        id: input.id,
-        name: input.name || 'Placeholder Feature Name',
-        description: input.description || 'Placeholder feature description',
-        icon: input.icon !== undefined ? input.icon : null,
-        is_highlighted: input.is_highlighted || false,
-        sort_order: input.sort_order || 0,
-        is_active: input.is_active || true,
-        created_at: new Date(),
-        updated_at: new Date()
-    } as Feature);
+  try {
+    // First check if the feature exists
+    const existingFeature = await db.select()
+      .from(featuresTable)
+      .where(eq(featuresTable.id, input.id))
+      .execute();
+
+    if (existingFeature.length === 0) {
+      throw new Error(`Feature with id ${input.id} not found`);
+    }
+
+    // Build update object with only provided fields
+    const updateData: Record<string, any> = {
+      updated_at: new Date()
+    };
+
+    if (input.name !== undefined) {
+      updateData['name'] = input.name;
+    }
+    if (input.description !== undefined) {
+      updateData['description'] = input.description;
+    }
+    if (input.icon !== undefined) {
+      updateData['icon'] = input.icon;
+    }
+    if (input.is_highlighted !== undefined) {
+      updateData['is_highlighted'] = input.is_highlighted;
+    }
+    if (input.sort_order !== undefined) {
+      updateData['sort_order'] = input.sort_order;
+    }
+    if (input.is_active !== undefined) {
+      updateData['is_active'] = input.is_active;
+    }
+
+    // Update the feature record
+    const result = await db.update(featuresTable)
+      .set(updateData)
+      .where(eq(featuresTable.id, input.id))
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('Feature update failed:', error);
+    throw error;
+  }
 };
